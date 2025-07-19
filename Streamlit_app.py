@@ -1,152 +1,112 @@
-{
-  "nbformat": 4,
-  "nbformat_minor": 0,
-  "metadata": {
-    "colab": {
-      "provenance": [],
-      "authorship_tag": "ABX9TyMatHqlcc/TvL6/Jy2Kuiqt",
-      "include_colab_link": true
-    },
-    "kernelspec": {
-      "name": "python3",
-      "display_name": "Python 3"
-    },
-    "language_info": {
-      "name": "python"
+import streamlit as st
+import joblib
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load trained model
+model = joblib.load("model_lightgbm_v2.pkl")
+
+st.set_page_config(page_title="Employee Salary Estimator", layout="centered")
+
+# Custom CSS to style the app
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f9f9f9;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: 'Segoe UI', sans-serif;
     }
-  },
-  "cells": [
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "view-in-github",
-        "colab_type": "text"
-      },
-      "source": [
-        "<a href=\"https://colab.research.google.com/github/Jayesh-2004-d17/Employee-Salary-Prediction/blob/main/Streamlit_app.py\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "source": [
-        "import streamlit as st\n",
-        "import joblib\n",
-        "import numpy as np\n",
-        "import matplotlib.pyplot as plt\n",
-        "\n",
-        "# Load trained model\n",
-        "model = joblib.load(\"model_lightgbm_v2.pkl\")\n",
-        "\n",
-        "st.set_page_config(page_title=\"Employee Salary Estimator\", layout=\"centered\")\n",
-        "\n",
-        "# Custom CSS to style the app\n",
-        "st.markdown(\"\"\"\n",
-        "    <style>\n",
-        "    .main {\n",
-        "        background-color: #f9f9f9;\n",
-        "        padding: 2rem;\n",
-        "        border-radius: 10px;\n",
-        "        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);\n",
-        "        font-family: 'Segoe UI', sans-serif;\n",
-        "    }\n",
-        "    h1 {\n",
-        "        color: #1f77b4;\n",
-        "        text-align: center;\n",
-        "    }\n",
-        "    .stButton > button {\n",
-        "        background-color: #1f77b4;\n",
-        "        color: white;\n",
-        "        border-radius: 8px;\n",
-        "        height: 3em;\n",
-        "        width: 100%;\n",
-        "        font-size: 16px;\n",
-        "    }\n",
-        "    .stSuccess {\n",
-        "        background-color: #d4edda;\n",
-        "        color: #155724;\n",
-        "        padding: 1rem;\n",
-        "        border-radius: 8px;\n",
-        "        font-size: 18px;\n",
-        "    }\n",
-        "    </style>\n",
-        "\"\"\", unsafe_allow_html=True)\n",
-        "\n",
-        "st.markdown(\"<div class='main'>\", unsafe_allow_html=True)\n",
-        "\n",
-        "st.title(\"💼 Employee Salary Estimator\")\n",
-        "st.write(\"Use the form below to estimate an employee's expected monthly salary.\")\n",
-        "st.markdown(\"---\")\n",
-        "\n",
-        "# Actual category labels\n",
-        "workclass_options = [\"Private\", \"Self-emp-not-inc\", \"Self-emp-inc\", \"Federal-gov\", \"Local-gov\", \"State-gov\", \"Without-pay\", \"Never-worked\"]\n",
-        "education_options = [\"Bachelors\", \"HS-grad\", \"11th\", \"Masters\", \"9th\", \"Some-college\", \"Assoc-acdm\", \"Assoc-voc\", \"Doctorate\", \"7th-8th\", \"Prof-school\", \"5th-6th\", \"10th\", \"1st-4th\", \"Preschool\", \"12th\"]\n",
-        "marital_status_options = [\"Married-civ-spouse\", \"Divorced\", \"Never-married\", \"Separated\", \"Widowed\", \"Married-spouse-absent\", \"Married-AF-spouse\"]\n",
-        "occupation_options = [\"Tech-support\", \"Craft-repair\", \"Other-service\", \"Sales\", \"Exec-managerial\", \"Prof-specialty\", \"Handlers-cleaners\", \"Machine-op-inspct\", \"Adm-clerical\", \"Farming-fishing\", \"Transport-moving\", \"Priv-house-serv\", \"Protective-serv\", \"Armed-Forces\", \"Unknown\"]\n",
-        "relationship_options = [\"Wife\", \"Own-child\", \"Husband\", \"Not-in-family\", \"Other-relative\", \"Unmarried\"]\n",
-        "race_options = [\"White\", \"Black\", \"Asian-Pac-Islander\", \"Amer-Indian-Eskimo\", \"Other\"]\n",
-        "native_country_options = [\"United-States\", \"Mexico\", \"Philippines\", \"Germany\", \"Canada\", \"India\", \"China\", \"Cuba\", \"England\", \"Japan\", \"South\"]\n",
-        "\n",
-        "# Collect user inputs\n",
-        "age = st.slider(\"Age\", 18, 90, 30)\n",
-        "workclass = st.selectbox(\"Workclass\", workclass_options)\n",
-        "education = st.selectbox(\"Education\", education_options)\n",
-        "education_num = st.slider(\"Education Number\", 1, 16, 9)\n",
-        "marital_status = st.selectbox(\"Marital Status\", marital_status_options)\n",
-        "occupation = st.selectbox(\"Occupation\", occupation_options)\n",
-        "relationship = st.selectbox(\"Relationship\", relationship_options)\n",
-        "race = st.selectbox(\"Race\", race_options)\n",
-        "sex = st.selectbox(\"Sex\", [\"Female\", \"Male\"])\n",
-        "capital_gain = st.number_input(\"Capital Gain\", 0)\n",
-        "capital_loss = st.number_input(\"Capital Loss\", 0)\n",
-        "hours_per_week = st.slider(\"Hours Per Week\", 1, 99, 40)\n",
-        "native_country = st.selectbox(\"Native Country\", native_country_options)\n",
-        "fnlwgt = st.number_input(\"Final Weight (fnlwgt)\", 0)\n",
-        "\n",
-        "# Encode inputs\n",
-        "workclass_encoded = workclass_options.index(workclass)\n",
-        "education_encoded = education_options.index(education)\n",
-        "marital_status_encoded = marital_status_options.index(marital_status)\n",
-        "occupation_encoded = occupation_options.index(occupation)\n",
-        "relationship_encoded = relationship_options.index(relationship)\n",
-        "race_encoded = race_options.index(race)\n",
-        "native_country_encoded = native_country_options.index(native_country)\n",
-        "sex_encoded = 1 if sex == \"Male\" else 0\n",
-        "\n",
-        "# Input feature order must match model training\n",
-        "input_data = np.array([[\n",
-        "    age, workclass_encoded, education_encoded, education_num, marital_status_encoded,\n",
-        "    occupation_encoded, relationship_encoded, race_encoded, sex_encoded, capital_gain,\n",
-        "    capital_loss, hours_per_week, native_country_encoded, fnlwgt\n",
-        "]])\n",
-        "\n",
-        "# Predict and estimate salary\n",
-        "if st.button(\"Estimate Salary\"):\n",
-        "    prediction = model.predict(input_data)\n",
-        "\n",
-        "    if prediction[0] == 1:\n",
-        "        salary = \"₹75,000/month (High Income Group)\"\n",
-        "        salary_value = 75000\n",
-        "    else:\n",
-        "        salary = \"₹30,000/month (Lower Income Group)\"\n",
-        "        salary_value = 30000\n",
-        "\n",
-        "    st.success(f\"Estimated Salary: {salary}\")\n",
-        "\n",
-        "    # Salary bar chart\n",
-        "    st.write(\"### Salary Estimate Chart\")\n",
-        "    fig, ax = plt.subplots()\n",
-        "    ax.bar([\"Predicted Salary\"], [salary_value], color=\"#1f77b4\")\n",
-        "    ax.set_ylabel(\"INR\")\n",
-        "    ax.set_ylim(0, 100000)\n",
-        "    st.pyplot(fig)\n",
-        "\n",
-        "st.markdown(\"</div>\", unsafe_allow_html=True)\n"
-      ],
-      "metadata": {
-        "id": "0iJj4jWr_HZH"
-      },
-      "execution_count": null,
-      "outputs": []
+    h1 {
+        color: #1f77b4;
+        text-align: center;
     }
-  ]
-}
+    .stButton > button {
+        background-color: #1f77b4;
+        color: white;
+        border-radius: 8px;
+        height: 3em;
+        width: 100%;
+        font-size: 16px;
+    }
+    .stSuccess {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 18px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("<div class='main'>", unsafe_allow_html=True)
+
+st.title("💼 Employee Salary Estimator")
+st.write("Use the form below to estimate an employee's expected monthly salary.")
+st.markdown("---")
+
+# Actual category labels
+workclass_options = ["Private", "Self-emp-not-inc", "Self-emp-inc", "Federal-gov", "Local-gov", "State-gov", "Without-pay", "Never-worked"]
+education_options = ["Bachelors", "HS-grad", "11th", "Masters", "9th", "Some-college", "Assoc-acdm", "Assoc-voc", "Doctorate", "7th-8th", "Prof-school", "5th-6th", "10th", "1st-4th", "Preschool", "12th"]
+marital_status_options = ["Married-civ-spouse", "Divorced", "Never-married", "Separated", "Widowed", "Married-spouse-absent", "Married-AF-spouse"]
+occupation_options = ["Tech-support", "Craft-repair", "Other-service", "Sales", "Exec-managerial", "Prof-specialty", "Handlers-cleaners", "Machine-op-inspct", "Adm-clerical", "Farming-fishing", "Transport-moving", "Priv-house-serv", "Protective-serv", "Armed-Forces", "Unknown"]
+relationship_options = ["Wife", "Own-child", "Husband", "Not-in-family", "Other-relative", "Unmarried"]
+race_options = ["White", "Black", "Asian-Pac-Islander", "Amer-Indian-Eskimo", "Other"]
+native_country_options = ["United-States", "Mexico", "Philippines", "Germany", "Canada", "India", "China", "Cuba", "England", "Japan", "South"]
+
+# Collect user inputs
+age = st.slider("Age", 18, 90, 30)
+workclass = st.selectbox("Workclass", workclass_options)
+education = st.selectbox("Education", education_options)
+education_num = st.slider("Education Number", 1, 16, 9)
+marital_status = st.selectbox("Marital Status", marital_status_options)
+occupation = st.selectbox("Occupation", occupation_options)
+relationship = st.selectbox("Relationship", relationship_options)
+race = st.selectbox("Race", race_options)
+sex = st.selectbox("Sex", ["Female", "Male"])
+capital_gain = st.number_input("Capital Gain", 0)
+capital_loss = st.number_input("Capital Loss", 0)
+hours_per_week = st.slider("Hours Per Week", 1, 99, 40)
+native_country = st.selectbox("Native Country", native_country_options)
+fnlwgt = st.number_input("Final Weight (fnlwgt)", 0)
+
+# Encode inputs
+workclass_encoded = workclass_options.index(workclass)
+education_encoded = education_options.index(education)
+marital_status_encoded = marital_status_options.index(marital_status)
+occupation_encoded = occupation_options.index(occupation)
+relationship_encoded = relationship_options.index(relationship)
+race_encoded = race_options.index(race)
+native_country_encoded = native_country_options.index(native_country)
+sex_encoded = 1 if sex == "Male" else 0
+
+# Input feature order must match model training
+input_data = np.array([[
+    age, workclass_encoded, education_encoded, education_num, marital_status_encoded,
+    occupation_encoded, relationship_encoded, race_encoded, sex_encoded, capital_gain,
+    capital_loss, hours_per_week, native_country_encoded, fnlwgt
+]])
+
+# Predict and estimate salary
+if st.button("Estimate Salary"):
+    prediction = model.predict(input_data)
+
+    if prediction[0] == 1:
+        salary = "₹75,000/month (High Income Group)"
+        salary_value = 75000
+    else:
+        salary = "₹30,000/month (Lower Income Group)"
+        salary_value = 30000
+
+    st.success(f"Estimated Salary: {salary}")
+
+    # Salary bar chart
+    st.write("### Salary Estimate Chart")
+    fig, ax = plt.subplots()
+    ax.bar(["Predicted Salary"], [salary_value], color="#1f77b4")
+    ax.set_ylabel("INR")
+    ax.set_ylim(0, 100000)
+    st.pyplot(fig)
+
+st.markdown("</div>", unsafe_allow_html=True)
